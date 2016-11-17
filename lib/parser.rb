@@ -5,7 +5,7 @@ module JSON::Api; end
 module JSON::Api::Vanilla
   class InvalidRootStructure < StandardError; end
 
-  # Convert a String JSON API payload to vanilla Ruby objects.
+  # Convert a String JSON API payload to vanilla Ruby objects.
   #
   # Example:
   #   >> json = IO.read("articles.json")  # From http://jsonapi.org
@@ -13,14 +13,14 @@ module JSON::Api::Vanilla
   #   >> doc.data[0].comments[1].author.last_name
   #   => "Gebhardt"
   #
-  # @param json [String] the JSON API payload.
+  # @param json [String] the JSON API payload.
   # @return [JSON::Api::Vanilla::Document] a wrapper for the objects.
   def self.parse(json)
     hash = JSON.parse(json)
     build(hash)
   end
 
-  # Convert a ruby hash JSON API representation to vanilla Ruby objects.
+  # Convert a ruby hash JSON API representation to vanilla Ruby objects.
   # Similar to .parse but takes hash as a parameter.
   #
   # Example:
@@ -29,7 +29,7 @@ module JSON::Api::Vanilla
   #   >> doc.errors.first["detail"]
   #   => "Missing `data` Member at document's top level."
   #
-  # @param hash [Hash] parsed JSON API payload.
+  # @param hash [Hash] parsed JSON API payload.
   # @return [JSON::Api::Vanilla::Document] a wrapper for the objects.
   def self.build(hash)
     naive_validate(hash)
@@ -61,6 +61,7 @@ module JSON::Api::Vanilla
       obj = klass.new
       obj.type = o_hash['type']
       obj.id = o_hash['id']
+      obj.data_links = o_hash['links']
       if o_hash['attributes']
         o_hash['attributes'].each do |key, value|
           set_key(obj, key, value, original_keys)
@@ -108,6 +109,7 @@ module JSON::Api::Vanilla
       objects[[data_hash['type'], data_hash['id']]]
     end
     links[data] = hash['links']
+    #raise links.inspect
     meta[data] = hash['meta']
     Document.new(data, links: links, rel_links: rel_links, meta: meta,
                  objects: objects, keys: original_keys, errors: errors,
@@ -123,6 +125,7 @@ module JSON::Api::Vanilla
     end
     add_accessor(klass, 'id')
     add_accessor(klass, 'type')
+    add_accessor(klass, 'data_links')
     attr_keys = hash['attributes'] ? hash['attributes'].keys : []
     rel_keys = hash['relationships'] ? hash['relationships'].keys : []
     (attr_keys + rel_keys).each do |key|
@@ -175,7 +178,7 @@ module JSON::Api::Vanilla
   def self.naive_validate(hash)
     root_keys = %w(data errors meta)
     present_structures = root_keys.map do |key|
-      obj = hash[key] || hash[key.to_sym]
+      obj = hash[key]
       obj.respond_to?(:empty?) ? !obj.empty? : !!obj
     end
     if present_structures.none?
@@ -184,7 +187,7 @@ module JSON::Api::Vanilla
   end
 
   class Document
-    # @return [Object, Array<Object>] the content of the JSON API data.
+    # @return [Object, Array<Object>] the content of the JSON API data.
     attr_reader :data
     # @return [Hash] a map from objects (obtained from .data) to their links,
     #   as a Hash.
@@ -215,7 +218,7 @@ module JSON::Api::Vanilla
       @superclass = superclass
     end
 
-    # Get a JSON API object.
+    # Get a JSON API object.
     #
     # @param type [String] the type of the object we want returned.
     # @param id [String] its id.
@@ -224,7 +227,7 @@ module JSON::Api::Vanilla
       @objects[[type, id]]
     end
 
-    # Get all JSON API objects of a given type.
+    # Get all JSON API objects of a given type.
     #
     # @param type [String] the type of the objects we want returned.
     # @return [Array<Object>] the list of objects with that type.
