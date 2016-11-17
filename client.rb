@@ -1,6 +1,6 @@
 require 'base64'
 require 'net/http'
-require "json-api-vanilla"
+require './lib/parser.rb'
 
 require 'rubygems'
 require 'bundler/setup'
@@ -46,6 +46,3 @@ module ApiClient
   end
 
 end
-
-doc = ApiClient::Branch.list_by_url
-puts doc.data[0].name.inspect
