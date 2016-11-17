@@ -11,16 +11,22 @@ module ApiClient
 
   class Base
     class << self
-      attr_accessor :list_url
+      attr_accessor :base_url
     end
 
     #get items collection from specified link endpoint
-    def self.list_by_url(url = self.list_url)
+    def self.list_by_url(url)
       request(url, 'GET')
     end
 
     #get single item data from specified link endpoint
     def self.retreive_by_url(url)
+      request(url, 'GET')
+    end
+
+    #get single item data by its id
+    def self.retreive_by_id(id)
+      url = "#{base_url}/#{id}"
       request(url, 'GET')
     end
 
@@ -47,13 +53,15 @@ module ApiClient
 
 
   class Branch < Base
-    self.list_url = '/api/branches'
+    self.base_url = '/api/branches'
   end
 
   class Landlord < Base
+    self.base_url = '/api/landlords'
   end
 
   class Property < Base
+    self.base_url = '/api/properties'
   end
 
 end

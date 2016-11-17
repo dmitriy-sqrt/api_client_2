@@ -1,12 +1,10 @@
 require './client.rb'
 
 #get all branches, that you have access to
-branches = ApiClient::Branch.list_by_url.data
-#puts branches.inspect
+branches = ApiClient::Branch.list_by_url('/api/branches').data
 
 #pick first branch
 branch = branches.first
-
 branch_link = branch.data_links['self']
 
 #and retrieve its data
