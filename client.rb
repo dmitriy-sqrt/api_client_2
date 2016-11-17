@@ -6,6 +6,8 @@ module ApiClient
   API_ID   = 'test'
   API_KEY  = 'test'
   API_VERSION = '1'
+  DEBUG_REQUESTS = false
+  DEBUG_RESPONSES = false
 
   class Base
     class << self
@@ -32,7 +34,14 @@ module ApiClient
       }
 
       response = http.send_request(method, url, payload, headers)
-      JSON::Api::Vanilla.parse(response.body)
+      parsed_response = JSON::Api::Vanilla.parse(response.body)
+
+      #some optional debugging
+      puts [method, url, payload, headers].inspect if DEBUG_REQUESTS
+      puts response.body.inspect if DEBUG_RESPONSES
+      puts " " if DEBUG_REQUESTS || DEBUG_RESPONSES
+
+      parsed_response
     end
   end
 
