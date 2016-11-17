@@ -31,7 +31,6 @@ GEM
     erubis (2.7.0)
     i18n (0.7.0)
     json (1.8.3)
-    json-api-vanilla (1.0.0)
     jsonapi (0.1.1.beta6)
       jsonapi-parser (= 0.1.1.beta3)
       jsonapi-renderer (= 0.1.1.beta1)
@@ -72,7 +71,6 @@ PLATFORMS
 
 DEPENDENCIES
   active_model_serializers
-  json-api-vanilla
 
 BUNDLED WITH
    1.13.0
