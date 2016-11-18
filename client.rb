@@ -11,7 +11,7 @@ module ApiClient
 
   class Base
     class << self
-      attr_accessor :base_url
+      attr_accessor :endpoint_name
     end
 
     #get items collection from specified link endpoint
@@ -26,8 +26,16 @@ module ApiClient
 
     #get single item data by its id
     def self.retreive_by_id(id)
-      url = "#{base_url}/#{id}"
+      url = "/api/#{endpoint_name}/#{id}"
       request(url, 'GET')
+    end
+
+    #create item (data hash and parent {key: value})
+    def self.create(data, parent)
+      url = form_request_url(data, parent)
+
+      formed_data = form_request_body(data)
+      request(url, 'POST', formed_data)
     end
 
     private
@@ -36,10 +44,11 @@ module ApiClient
       http = Net::HTTP.new(API_HOST, API_PORT)
       headers = {
         'Accept'        => "application/json; version=#{API_VERSION}",
-        'Authorization' => "Basic #{Base64.encode64("#{API_ID}:#{API_KEY}")}"
+        'Authorization' => "Basic #{Base64.encode64("#{API_ID}:#{API_KEY}")}",
+        'Content-Type'  => "application/json"
       }
 
-      response = http.send_request(method, url, payload, headers)
+      response = http.send_request(method, "/api/#{url}", payload, headers)
       parsed_response = JSON::Api::Vanilla.parse(response.body)
 
       #some optional debugging
@@ -49,19 +58,34 @@ module ApiClient
 
       parsed_response
     end
+
+    def self.form_request_url(data, parent)
+      parent_resource = parent.keys.first
+      parent_resource_id = parent.values.first
+      "/#{parent_resource}/#{parent_resource_id}/#{self.endpoint_name}"
+    end
+
+    def self.form_request_body(data)
+      {
+        data: {
+          type: self.endpoint_name,
+          attributes: data
+        }
+      }.to_json
+    end
   end
 
 
   class Branch < Base
-    self.base_url = '/api/branches'
+    self.endpoint_name = 'branches'
   end
 
   class Landlord < Base
-    self.base_url = '/api/landlords'
+    self.endpoint_name = 'landlords'
   end
 
   class Property < Base
-    self.base_url = '/api/properties'
+    self.endpoint_name = 'properties'
   end
 
 end
